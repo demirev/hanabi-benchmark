@@ -1,0 +1,1 @@
+PLAY a move in the game. Only return a correctly formatted move string.
