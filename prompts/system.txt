@@ -28,6 +28,7 @@ You must choose ONE of these actions:
 - Format: D{card_position} where card_position is the position of the card in your hand
 - Example: "D3" discards your third card
 - Gain 1 information token (max 8)
+- If you have all 8 information tokens, you cannot discard any card. Attempting to discard will result in a loss of 1 life.
 
 3. GIVE INFORMATION
 - Format: C{player}{type}{value}{positions}

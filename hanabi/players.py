@@ -53,6 +53,11 @@ class PromptLoaderMixin:
 
 class RandomPlayer(Player):
 	def _generate_move(self, game_state: str) -> str:
+		
+		# If game state includes a line "Previous turns:", remove everything after it
+		if "Previous turns:" in game_state:
+			game_state = game_state.split("Previous turns:")[0]
+
 		# Parse the game state to get number of cards in hand
 		hand_line = [line for line in game_state.split('\n') if "Your hand:" in line][0]
 		num_cards = len([c for c in hand_line if c == '*'])
@@ -78,7 +83,8 @@ class RandomPlayer(Player):
 			# Get other players' hands
 			other_hands_section = game_state.split("Other hands:\n")[1].split("\n")
 			for line in other_hands_section:
-				if line.strip():
+				if ':' in line:  # Only process lines that contain player hands
+					# print(line)
 					player_num = line.split(':')[0].split()[1]
 					cards = line.split(':')[1].strip()
 					if cards:  # If player has cards

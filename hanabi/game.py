@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Dict, Optional
 import random
-from hanabi.player import Player
+from hanabi.players import Player
 
 @dataclass
 class Card:
@@ -54,7 +54,7 @@ class HanabiGame:
         for i in range(len(self.players)):
             if i != player:
                 state += f"Player {i+1}: {' '.join(f'[{c.color}{c.number}]' for c in self.hands[i])}\n"
-        return state
+        return state.strip()  # Ensure no trailing newlines
     
     def validate_move(self, player: int, move: str) -> bool:
         try:
@@ -127,8 +127,17 @@ class HanabiGame:
         # Store the state after the move
         self.last_states.append((player, move, self.get_game_state(player)))
 
-    def play_game(self):
+    def play_game(self, verbosity: int = 1):
+        if verbosity > 0:
+            print("Starting game...")
         while self.lives > 0 and sum(self.play_area.values()) < 25 and self.deck:
+            if verbosity > 1:
+                print(f"Current player: Player {self.current_player+1}")
+                print(self.get_game_state(self.current_player))
+            elif verbosity > 0:
+                print(f"Current player: Player {self.current_player+1}")
+                print(self.get_game_state(self.current_player).split("\n")[1])
+            
             player = self.current_player
             current_state = self.get_game_state(player)
             
@@ -149,7 +158,13 @@ class HanabiGame:
                 new_state += "\nPrevious turns:\n" + "\n".join(history)
             
             move = self.players[player].take_turn(new_state)
+            if verbosity > 1:
+                print(f"Player {player+1} move: {move}")
             self.execute_move(player, move)
             self.current_player = (self.current_player + 1) % len(self.players)
+
+        if verbosity > 0:
+            print("Game over. Final board state:")
+            print(self.get_game_state(self.current_player))
         
         return sum(self.play_area.values()) 
