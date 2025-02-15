@@ -62,12 +62,11 @@ An incorrectly formatted move will result in a loss of 1 life and will not be ad
 ## Features
 
 - Support for multiple LLM providers:
-  - OpenAI (gpt-4o, gpt-03)
-  - Anthropic (claude-3-5-sonnet-20240620)
-  - Google (gemini-1.5-flash-latest)
-  - Groq (mixtral-8x7b-32768)
+  - OpenAI 
+  - Anthropic 
+  - Google
+  - Groq
   - xAI
-  - Random baseline player
 - Chain-of-thought reasoning configuration
 - Detailed game state tracking and logging
 - Experiment runner with CSV output
@@ -79,11 +78,26 @@ An incorrectly formatted move will result in a loss of 1 life and will not be ad
 git clone https://github.com/demirev/hanabi-benchmark.git
 cd hanabi-benchmark
 pip install -r requirements.txt
-python main.py --num_runs 10
+
+# Run with default settings (10 runs for all models)
+python main.py
+
+# Run with custom settings
+python main.py \
+    --num-runs 5 \
+    --output-dir results \
+    --models "openai:gpt-4o-mini-2024-07-18:{'cot':0},anthropic:claude-3-opus-20240229:{'cot':0}" \
+    --debug
 ```
 
-Make sure to set the correct API keys in the `.env` file for each provider.
+### Command Line Arguments
 
-## Acknowledgements
+- `--num-runs`, `-n`: Number of games to run per model configuration (default: 10)
+- `--output-dir`, `-o`: Directory where results will be saved (default: 'results')
+- `--models`, `-m`: Comma-separated list of models to test in the format `provider:model:{"args"}`. If not specified, all models from the configuration will be tested
+  - Example: `"openai:gpt-4:{'cot':1},anthropic:claude-3-opus-20240229:{'cot':0}"`
+  - Supported providers: openai, anthropic, google, groq, xai, test
+  - The args JSON object can include configuration like chain-of-thought prompting (`cot`)
+- `--debug`, `-d`: Enable debug mode to see detailed prompts and responses from the first player
 
-Hanabi is a game created by Antoine Bauza.
+Make sure to set the correct API keys in the `.env`

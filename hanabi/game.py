@@ -14,6 +14,7 @@ class HanabiGame:
         self.current_player = 0
         self.lives = 3
         self.info_tokens = 8
+        self.hands_played = 0
         self.play_area = {'R': 0, 'G': 0, 'B': 0, 'Y': 0, 'W': 0}
         self.discard_pile: List[Card] = []
         self.hands: List[List[Card]] = []
@@ -37,10 +38,15 @@ class HanabiGame:
             for _ in range(4):
                 self.hands[player].append(self.deck.pop())
 
-    def get_game_state(self, player: int) -> str:
+    def get_game_state(self, player: int, current_player: int) -> str:
         state = f"Players: {', '.join(f'Player {i+1}' for i in range(len(self.players))).replace(f'Player {player+1}', '[YOU]')}\n"
         state += f"Lives: {self.lives}/3 | Information tokens: {self.info_tokens}/8 | Score: {sum(self.play_area.values())}/25\n\n"
-        
+
+        if player == current_player:
+            state += f"Player {current_player+1} (YOU) to play\n"
+        else:
+            state += f"Player {current_player+1} to play\n"
+
         state += "Discard pile:\n"
         state += " ".join(f"{c.color}{c.number}" for c in self.discard_pile) + "\n\n"
         
@@ -54,6 +60,8 @@ class HanabiGame:
         for i in range(len(self.players)):
             if i != player:
                 state += f"Player {i+1}: {' '.join(f'[{c.color}{c.number}]' for c in self.hands[i])}\n"
+
+        state += "----------------------------------------\n\n"
         return state.strip()  # Ensure no trailing newlines
     
     def validate_move(self, player: int, move: str) -> bool:
@@ -97,8 +105,9 @@ class HanabiGame:
         if not self.validate_move(player, move):
             self.lives -= 1
             self.last_actions.append("INVALID MOVE")
-            # Store the state after invalid move
-            self.last_states.append((player, "INVALID MOVE", self.get_game_state(player)))
+            # Store states for all players after invalid move
+            for p in range(len(self.players)):
+                self.last_states.append((player, "INVALID MOVE", self.get_game_state(p, self.current_player)))
             return
             
         if move.startswith('P'):
@@ -122,10 +131,12 @@ class HanabiGame:
             
         elif move.startswith('C'):
             self.info_tokens -= 1
-            
+
+        self.hands_played += 1
         self.last_actions.append(move)
-        # Store the state after the move
-        self.last_states.append((player, move, self.get_game_state(player)))
+        # Store states for all players after the move
+        for p in range(len(self.players)):
+            self.last_states.append((player, move, self.get_game_state(p, self.current_player)))
 
     def play_game(self, verbosity: int = 1):
         if verbosity > 0:
@@ -133,16 +144,26 @@ class HanabiGame:
         while self.lives > 0 and sum(self.play_area.values()) < 25 and self.deck:
             if verbosity > 1:
                 print(f"Current player: Player {self.current_player+1}")
-                print(self.get_game_state(self.current_player))
+                print(self.get_game_state(self.current_player, self.current_player))
             elif verbosity > 0:
                 print(f"Current player: Player {self.current_player+1}")
-                print(self.get_game_state(self.current_player).split("\n")[1])
+                print(self.get_game_state(self.current_player, self.current_player).split("\n")[1])
             
-            player = self.current_player
-            current_state = self.get_game_state(player)
+            current_states = [
+                self.get_game_state(player, self.current_player) 
+                for player in range(len(self.players))
+            ]
             
-            # Get relevant states since player's last turn
-            relevant_states = self.last_states[-(len(self.players)-1):]
+            # Get states since player's last turn from current player's perspective
+            num_players = len(self.players)
+            states_per_move = num_players  # Since we store one state per player per move
+            moves_since_last_turn = num_players - 1  # Number of other players' moves
+            start_idx = -(moves_since_last_turn * states_per_move)  # Get all moves since last turn
+            
+            relevant_states = [
+                (p, a, s) for p, a, s in self.last_states[start_idx:]
+                if s.startswith(self.get_game_state(self.current_player, p).split('\n')[0])  # Get states from current player's view
+            ]
             
             # Format the history with intermediate states
             history = []
@@ -153,18 +174,20 @@ class HanabiGame:
                 history.append(state)
                 history.append("-" * 45)
             
-            new_state = current_state
             if history:
-                new_state += "\nPrevious turns:\n" + "\n".join(history)
+                new_state = "\nPrevious turns:\n" + "\n".join(history)
+                new_state += "\nCurrent State:\n" + current_states[self.current_player]
+            else:
+                new_state = current_states[self.current_player]
             
-            move = self.players[player].take_turn(new_state)
+            move = self.players[self.current_player].take_turn(new_state)
             if verbosity > 1:
-                print(f"Player {player+1} move: {move}")
-            self.execute_move(player, move)
+                print(f"Player {self.current_player+1} move: {move}")
+            self.execute_move(self.current_player, move)
             self.current_player = (self.current_player + 1) % len(self.players)
 
         if verbosity > 0:
             print("Game over. Final board state:")
-            print(self.get_game_state(self.current_player))
+            print(self.get_game_state(self.current_player, self.current_player))
         
         return sum(self.play_area.values()) 

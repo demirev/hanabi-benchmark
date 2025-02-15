@@ -13,20 +13,11 @@ from hanabi.players import (
 	#GroqPlayer,
 	RandomPlayer
 )
+from config.models import AVAILABLE_MODELS
+import json
 
 # Load environment variables from .env file
 load_dotenv()
-
-
-AVAILABLE_MODELS = [
-	{"provider": "openai", "model": "gpt-4", "args": {"cot": 1}},
-	{"provider": "openai", "model": "gpt-3.5-turbo", "args": {"cot": 1}},
-	{"provider": "anthropic", "model": "claude-3-sonnet-20240229", "args": {"cot": 1}},
-	{"provider": "google", "model": "gemini-pro", "args": {"cot": 1}},
-	{"provider": "groq", "model": "mixtral-8x7b-32768", "args": {"cot": 1}},
-	{"provider": "test", "model": "random", "args": {"cot": 0}}
-]
-
 
 def get_player_class(provider: str) -> type:
 	player_classes = {
@@ -56,7 +47,12 @@ def create_player(provider: str, model: str, args: Dict) -> object:
 	)
 
 
-def run_experiments(num_runs: int, output_dir: str = "results"):
+def run_experiments(
+		num_runs: int, 
+		output_dir: str = "results", 
+		models: List[Dict] = AVAILABLE_MODELS,
+		debug: bool = False
+	):
 	# Create output directory if it doesn't exist
 	os.makedirs(output_dir, exist_ok=True)
 	
@@ -73,6 +69,7 @@ def run_experiments(num_runs: int, output_dir: str = "results"):
 				"model",
 				"args",
 				"timestamp",
+				"hands_played",
 				"score"
 			])
 	
@@ -83,7 +80,7 @@ def run_experiments(num_runs: int, output_dir: str = "results"):
 			experiment_id = df['experiment_id'].max() + 1
 	
 	# Run experiments for each model
-	for model_config in AVAILABLE_MODELS:
+	for model_config in models:
 		provider = model_config["provider"]
 		model_name = model_config["model"]
 		args = model_config["args"]
@@ -96,10 +93,12 @@ def run_experiments(num_runs: int, output_dir: str = "results"):
 			
 			# Create player and game
 			players = [create_player(provider, model_name, args) for _ in range(num_players)]
+			if debug:
+				players[0].debug = True # only print debug for the first player
 			game = HanabiGame(players)
 			
 			# Run game and get score
-			score = game.play_game(verbosity=2)
+			score = game.play_game(verbosity=1)
 			
 			# Save results
 			with open(results_file, 'a', newline='') as f:
@@ -110,6 +109,7 @@ def run_experiments(num_runs: int, output_dir: str = "results"):
 					model_name,
 					str(args),  # Convert dict to string for CSV storage
 					datetime.now().isoformat(),
+					game.hands_played,
 					score
 				])
 			
@@ -126,21 +126,22 @@ def generate_summary(results_file: str, summary_file: str):
 	df['timestamp'] = pd.to_datetime(df['timestamp'])
 	
 	# Get the latest experiment for each model configuration
-	latest_experiment = df.sort_values('timestamp').groupby(['provider', 'model', 'args']).last()
+	latest_experiments = df.sort_values('timestamp').groupby(['provider', 'model', 'args']).last()
 	
-	# Calculate summary statistics
-	summary = df.groupby(['provider', 'model', 'args']).agg({
-		'score': ['mean', 'std', 'count']
+	# Calculate summary statistics on latest experiments only
+	summary = latest_experiments.groupby(['provider', 'model', 'args']).agg({
+		'score': ['mean', 'std', 'count'],
+		'hands_played': ['mean', 'std', 'count']
 	}).round(2)
 	
 	# Calculate win percentage (score of 25 is a win)
-	win_pct = df[df['score'] == 25].groupby(['provider', 'model', 'args']).size() / \
-			  df.groupby(['provider', 'model', 'args']).size() * 100
+	win_pct = latest_experiments[latest_experiments['score'] == 25].groupby(['provider', 'model', 'args']).size() / \
+			  latest_experiments.groupby(['provider', 'model', 'args']).size() * 100
 	
 	summary['win_percentage'] = win_pct.round(2)
 	
 	# Flatten column names
-	summary.columns = ['avg_score', 'std_score', 'num_games', 'win_percentage']
+	summary.columns = ['avg_score', 'std_score', 'num_games', 'win_percentage', 'avg_hands_played']
 	
 	# Save summary
 	summary.to_csv(summary_file)
@@ -161,11 +162,33 @@ def main():
 		default='results',
 		help='Output directory for results (default: results)'
 	)
+	parser.add_argument(
+		'-m', '--models',
+		type=str,
+		default=None,
+		help='Comma-separated list of models to run in the format: provider:model:[Optional args], e.g. openai:gpt-4o-mini-2024-07-18:{"cot": 1}'
+	)
+	parser.add_argument(
+		'-d', '--debug',
+		action='store_true',
+		help='Enable debug mode'
+	)
 	
 	args = parser.parse_args()
 	
-	run_experiments(args.num_runs, args.output_dir)
-
+	models = []
+	if args.models:
+		for model in args.models.split(','):
+			provider, model, args = model.split(':')
+			if args:
+				args = json.loads(args)
+			else:
+				args = {"cot": 0} # default args
+			models.append({"provider": provider, "model": model, "args": args})
+	else:
+		models = AVAILABLE_MODELS # run all models
+	
+	run_experiments(args.num_runs, args.output_dir, models, debug=args.debug)
 
 if __name__ == "__main__":
 	main()

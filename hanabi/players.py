@@ -115,6 +115,8 @@ class GPTPlayer(Player, PromptLoaderMixin):
 			model: str = "gpt-3.5-turbo", 
 			api_key: Optional[str] = None, 
 			cot: int = 0, 
+			reasoning_effort: str = None,
+			debug: bool = False,
 			system_prompt: Optional[str] = None, 
 			play_suffix: Optional[str] = None, 
 			think_suffix: Optional[str] = None,
@@ -127,17 +129,23 @@ class GPTPlayer(Player, PromptLoaderMixin):
 		)
 		self.model = model
 		self.cot = cot
-		
+		self.debug = debug
+		self.reasoning_effort = reasoning_effort
 		self._load_prompts(system_prompt, play_suffix, think_suffix)
 
 		# Initialize conversation with system prompt
 		self.messages = [
 			{"role": "system", "content": self.system_prompt}
 		]
+
+	def _debug_print(self, message: str):
+		if self.debug:
+			print(message)
 	
 	def _generate_move(self, game_state: str) -> str:
 		# Add game state to conversation history
 		self.messages.append({"role": "user", "content": game_state})
+		self._debug_print(f"-----------------\nLLM input: {game_state}")
 		
 		try:
 			for i in range(self.cot + 1): 
@@ -156,7 +164,8 @@ class GPTPlayer(Player, PromptLoaderMixin):
 				# Get response from API
 				response = self.client.chat.completions.create(
 					model=self.model,
-					messages=self.messages
+					messages=self.messages,
+					reasoning_effort=self.reasoning_effort
 				)
 
 				# Extract move from response
@@ -169,6 +178,7 @@ class GPTPlayer(Player, PromptLoaderMixin):
 				})
 				
 			
+			self._debug_print(f"-----------------\nLLM output: {output}")
 			return output # the final output is the move
 			
 		except Exception as e:
