@@ -14,14 +14,12 @@ class HanabiGame:
         self.current_player = 0
         self.lives = 3
         self.info_tokens = 8
-        self.hands_played = 0
+        self.turns_played = 0
         self.play_area = {'R': 0, 'G': 0, 'B': 0, 'Y': 0, 'W': 0}
         self.discard_pile: List[Card] = []
         self.hands: List[List[Card]] = []
-        self.last_actions: List[str] = []
         self.deck = self._create_deck()
         self._deal_initial_hands()
-        self.last_states: List[tuple[int, str, str]] = []  # (player, action, state)
     
     def _create_deck(self) -> List[Card]:
         deck = []
@@ -61,7 +59,7 @@ class HanabiGame:
             if i != player:
                 state += f"Player {i+1}: {' '.join(f'[{c.color}{c.number}]' for c in self.hands[i])}\n"
 
-        state += "----------------------------------------\n\n"
+        #state += "----------------------------------------\n\n"
         return state.strip()  # Ensure no trailing newlines
     
     def validate_move(self, player: int, move: str) -> bool:
@@ -102,13 +100,11 @@ class HanabiGame:
             return False
 
     def execute_move(self, player: int, move: str):
+        self.turns_played += 1
+
         if not self.validate_move(player, move):
             self.lives -= 1
-            self.last_actions.append("INVALID MOVE")
-            # Store states for all players after invalid move
-            for p in range(len(self.players)):
-                self.last_states.append((player, "INVALID MOVE", self.get_game_state(p, self.current_player)))
-            return
+            return "INVALID MOVE"
             
         if move.startswith('P'):
             card_idx = int(move[1]) - 1
@@ -132,58 +128,54 @@ class HanabiGame:
         elif move.startswith('C'):
             self.info_tokens -= 1
 
-        self.hands_played += 1
-        self.last_actions.append(move)
-        # Store states for all players after the move
-        for p in range(len(self.players)):
-            self.last_states.append((player, move, self.get_game_state(p, self.current_player)))
+        return move
 
     def play_game(self, verbosity: int = 1):
         if verbosity > 0:
             print("Starting game...")
+
+        history = ["" for _ in range(len(self.players))] # initialize empty history for each player
+
         while self.lives > 0 and sum(self.play_area.values()) < 25 and self.deck:
             if verbosity > 1:
-                print(f"Current player: Player {self.current_player+1}")
-                print(self.get_game_state(self.current_player, self.current_player))
+                print(f">>> Player {self.current_player+1}, Turn {self.turns_played}")
+                print(f">>> Game State: \n{self.get_game_state(self.current_player, self.current_player)}") # full game state
             elif verbosity > 0:
-                print(f"Current player: Player {self.current_player+1}")
-                print(self.get_game_state(self.current_player, self.current_player).split("\n")[1])
+                print(f">>> Player {self.current_player+1}, Turn {self.turns_played}")
+                top_line = self.get_game_state(self.current_player, self.current_player).split('\n')[1]
+                print(f">>> Game State: {top_line}") # top line of game state
             
+            # current state from the view point of each player
             current_states = [
                 self.get_game_state(player, self.current_player) 
                 for player in range(len(self.players))
             ]
             
-            # Get states since player's last turn from current player's perspective
-            num_players = len(self.players)
-            states_per_move = num_players  # Since we store one state per player per move
-            moves_since_last_turn = num_players - 1  # Number of other players' moves
-            start_idx = -(moves_since_last_turn * states_per_move)  # Get all moves since last turn
-            
-            relevant_states = [
-                (p, a, s) for p, a, s in self.last_states[start_idx:]
-                if s.startswith(self.get_game_state(self.current_player, p).split('\n')[0])  # Get states from current player's view
-            ]
-            
-            # Format the history with intermediate states
-            history = []
-            for p, action, state in relevant_states:
-                history.append(f"Player {p+1} Turn:")
-                history.append(f"Action: {action}")
-                history.append("Board State:")
-                history.append(state)
-                history.append("-" * 45)
-            
-            if history:
-                new_state = "\nPrevious turns:\n" + "\n".join(history)
-                new_state += "\nCurrent State:\n" + current_states[self.current_player]
+            # create current state string, including turns since last move
+            if history[self.current_player] != "":
+                new_state = history[self.current_player]
+                new_state += f"\n<-------- Current State: Turn {self.turns_played}, Player {self.current_player+1} (You) -------->\n"
+                new_state += f"{current_states[self.current_player]}\n"
             else:
                 new_state = current_states[self.current_player]
             
+            # decide move
             move = self.players[self.current_player].take_turn(new_state)
-            if verbosity > 1:
-                print(f"Player {self.current_player+1} move: {move}")
-            self.execute_move(self.current_player, move)
+
+            # execute move
+            if verbosity > 0:
+                print(f">>> Player {self.current_player+1} move: {move}")
+            executed_move = self.execute_move(self.current_player, move)
+
+            # update history
+            for player in range(len(self.players)):
+                history[player] += f"\n<-------- Turn {self.turns_played}, Player {self.current_player+1} -------->\n" 
+                history[player] += f"<-- Game State -->\n{current_states[player]}\n"
+                history[player] += f"<-- Move -->\n{executed_move}\n\n"
+
+            history[self.current_player] = "" # reset history for current player, it will start accumulating again from next player's turn
+
+            # switch to next player
             self.current_player = (self.current_player + 1) % len(self.players)
 
         if verbosity > 0:

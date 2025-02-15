@@ -144,47 +144,78 @@ class GPTPlayer(Player, PromptLoaderMixin):
 	
 	def _generate_move(self, game_state: str) -> str:
 		# Add game state to conversation history
-		self.messages.append({"role": "user", "content": game_state})
-		self._debug_print(f"-----------------\nLLM input: {game_state}")
-		
-		try:
-			for i in range(self.cot + 1): 
-				
-				if i == self.cot:
-					self.messages.append({
-						"role": "user", 
-						"content": self.play_suffix
-					})
-				else:
-					self.messages.append({
-						"role": "user", 
-						"content": self.think_suffix
-					})
-				
-				# Get response from API
-				response = self.client.chat.completions.create(
-					model=self.model,
-					messages=self.messages,
-					reasoning_effort=self.reasoning_effort
-				)
+		if self.cot == 0:
+			content = game_state + "\n" + self.play_suffix
+		else:
+			content = game_state + "\n" + self.think_suffix
 
-				# Extract move from response
-				output = response.choices[0].message.content.strip()
-          
-				# Add response to conversation history
-				self.messages.append({
-					"role": "assistant",
-					"content": output
-				})
-				
+		self.messages.append({"role": "user", "content": content})
+		self._debug_print(f">>>>>>> LLM input:\n {content}\n")
+
+		# Call LLM
+		try:
+			completion_args = {
+				"model": self.model,
+				"messages": self.messages
+			}
+			if self.reasoning_effort is not None:
+				completion_args["reasoning_effort"] = self.reasoning_effort
 			
-			self._debug_print(f"-----------------\nLLM output: {output}")
-			return output # the final output is the move
-			
+			response = self.client.chat.completions.create(**completion_args)
+			output = response.choices[0].message.content.strip()
+			self._debug_print(f">>>>>>> LLM output:\n {output}\n")
 		except Exception as e:
 			print(f"Error generating move: {e}")
-			return "ERROR" # this will be interpreted by the game as an invalid move and the player will lose 1 life
+			return "ERROR"
+		
+		# add output to conversation history
+		self.messages.append({"role": "assistant", "content": output})
+		
+		# if COT == 0, return output
+		if self.cot == 0:
+			return output
+		
+		# if COT > 0, continue to generate moves	
+		for i in range(self.cot):
+			if i == self.cot - 1: # last iteration, play move
+				self.messages.append({
+					"role": "user", 
+					"content": self.play_suffix
+				})
+				self._debug_print(f">>>>>>> LLM input:\n {self.play_suffix}\n")
+			else: # intermediate iterations, think move
+				self.messages.append({
+					"role": "user", 
+					"content": self.think_suffix
+				})
+				self._debug_print(f">>>>>>> LLM input:\n {self.think_suffix}\n")
+			
+			# Get response from API
+			completion_args = {
+				"model": self.model,
+				"messages": self.messages
+			}
+			if self.reasoning_effort is not None:
+				completion_args["reasoning_effort"] = self.reasoning_effort
+			
+			try:
+				response = self.client.chat.completions.create(**completion_args)
+			except Exception as e:
+				print(f"Error generating move: {e}")
+				return "ERROR"
 
+			# Extract move from response
+			output = response.choices[0].message.content.strip()
+			self._debug_print(f">>>>>>> LLM output:\n{output}\n")
+			
+			# Add response to conversation history
+			self.messages.append({
+				"role": "assistant",
+				"content": output
+			})
+		
+		return output # the final output is the move
+			
 
 class ClaudePlayer(Player, PromptLoaderMixin):
 	def __init__(self, model: str = "claude-3-sonnet-20240229", api_key: Optional[str] = None, 
@@ -305,11 +336,14 @@ class GroqPlayer(Player, PromptLoaderMixin):
 					})
 				
 				# Get response from API
-				response = self.client.chat.completions.create(
-					model=self.model,
-					messages=self.messages,
-					temperature=0.2
-				)
+				completion_args = {
+					"model": self.model,
+					"messages": self.messages
+				}
+				if self.reasoning_effort is not None:
+					completion_args["reasoning_effort"] = self.reasoning_effort
+				
+				response = self.client.chat.completions.create(**completion_args)
 
 				# Extract move from response
 				output = response.choices[0].message.content

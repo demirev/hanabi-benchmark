@@ -69,7 +69,7 @@ def run_experiments(
 				"model",
 				"args",
 				"timestamp",
-				"hands_played",
+				"turns_played",
 				"score"
 			])
 	
@@ -94,7 +94,7 @@ def run_experiments(
 			# Create player and game
 			players = [create_player(provider, model_name, args) for _ in range(num_players)]
 			if debug:
-				players[0].debug = True # only print debug for the first player
+				players[1].debug = True # only print debug for the fourth player
 			game = HanabiGame(players)
 			
 			# Run game and get score
@@ -109,7 +109,7 @@ def run_experiments(
 					model_name,
 					str(args),  # Convert dict to string for CSV storage
 					datetime.now().isoformat(),
-					game.hands_played,
+					game.turns_played,
 					score
 				])
 			
@@ -131,17 +131,17 @@ def generate_summary(results_file: str, summary_file: str):
 	# Calculate summary statistics on latest experiments only
 	summary = latest_experiments.groupby(['provider', 'model', 'args']).agg({
 		'score': ['mean', 'std', 'count'],
-		'hands_played': ['mean', 'std', 'count']
+		'turns_played': ['mean']
 	}).round(2)
 	
 	# Calculate win percentage (score of 25 is a win)
 	win_pct = latest_experiments[latest_experiments['score'] == 25].groupby(['provider', 'model', 'args']).size() / \
-			  latest_experiments.groupby(['provider', 'model', 'args']).size() * 100
+			  latest_experiments.groupby(['provider', 'model', 'args']).size()
 	
 	summary['win_percentage'] = win_pct.round(2)
 	
 	# Flatten column names
-	summary.columns = ['avg_score', 'std_score', 'num_games', 'win_percentage', 'avg_hands_played']
+	summary.columns = ['avg_score', 'std_score', 'num_games', 'win_percentage', 'avg_turns_played']
 	
 	# Save summary
 	summary.to_csv(summary_file)
@@ -149,7 +149,7 @@ def generate_summary(results_file: str, summary_file: str):
 
 
 def main():
-	parser = argparse.ArgumentParser(description='Run Hanabi AI experiments')
+	parser = argparse.ArgumentParser(description='Hanabi AI experiments')
 	parser.add_argument(
 		'-n', '--num-runs',
 		type=int,
@@ -166,7 +166,7 @@ def main():
 		'-m', '--models',
 		type=str,
 		default=None,
-		help='Comma-separated list of models to run in the format: provider:model:[Optional args], e.g. openai:gpt-4o-mini-2024-07-18:{"cot": 1}'
+		help='Comma-separated list of models to run in the format: provider/model/{"args"}'
 	)
 	parser.add_argument(
 		'-d', '--debug',
@@ -174,21 +174,21 @@ def main():
 		help='Enable debug mode'
 	)
 	
-	args = parser.parse_args()
+	parsed_args = parser.parse_args()  # Rename to parsed_args instead of args
 	
 	models = []
-	if args.models:
-		for model in args.models.split(','):
-			provider, model, args = model.split(':')
-			if args:
-				args = json.loads(args)
+	if parsed_args.models:
+		for model in parsed_args.models.split(','):
+			provider, model, model_args = model.split('/')  # Rename to model_args
+			if model_args:
+				model_args = json.loads(model_args)
 			else:
-				args = {"cot": 0} # default args
-			models.append({"provider": provider, "model": model, "args": args})
+				model_args = {"cot": 0}  # default args
+			models.append({"provider": provider, "model": model, "args": model_args})
 	else:
-		models = AVAILABLE_MODELS # run all models
+		models = AVAILABLE_MODELS  # run all models
 	
-	run_experiments(args.num_runs, args.output_dir, models, debug=args.debug)
+	run_experiments(parsed_args.num_runs, parsed_args.output_dir, models, debug=parsed_args.debug)
 
 if __name__ == "__main__":
 	main()
