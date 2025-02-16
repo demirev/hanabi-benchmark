@@ -94,10 +94,12 @@ python main.py \
 
 - `--num-runs`, `-n`: Number of games to run per model configuration (default: 10)
 - `--output-dir`, `-o`: Directory where results will be saved (default: 'results')
-- `--models`, `-m`: Comma-separated list of models to test in the format `provider/model/{"args"}`. If not specified, all models from the configuration will be tested
-  - Example: `"openai/gpt-4/{'cot':1},anthropic/claude-3-opus-20240229/{'cot':0}"`
+- `--models`, `-m`: Semicolon-separated list of models to test in the format `provider/model/{"args"}`. If not specified, all models from the configuration will be tested
+  - Example: `"openai/gpt-4/{'cot':1};anthropic/claude-3-opus-20240229/{'cot':0}"`
   - Supported providers: openai, anthropic, google, groq, xai, test
   - The args JSON object can include configuration like chain-of-thought prompting (`cot`)
+- `--provider`, `-p`: Filter models by provider name (e.g., "openai", "anthropic", etc.)
+- `--only-new`: Only run models that haven't been tested in previous experiments
 - `--debug`, `-d`: Enable debug mode to see detailed prompts and responses from the first player
 
 Make sure to set the correct API keys in the `.env`

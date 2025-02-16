@@ -31,12 +31,30 @@ def get_player_class(provider: str) -> type:
 	return player_classes[provider]
 
 
+def get_base_link(provider: str) -> str:
+	base_links = {
+		"groq": "https://api.groq.com/openai/v1",
+		"xai": "https://api.x.ai/v1"
+	}
+	if provider not in base_links:
+		return None
+	return base_links[provider]
+
+
 def create_player(provider: str, model: str, args: Dict) -> object:
 	PlayerClass = get_player_class(provider)
 	
 	# Get API key from environment variables
 	api_key = os.getenv(f"{provider.upper()}_API_KEY")
+	base_link = get_base_link(provider)
+
+	if not api_key:
+		raise ValueError(f"API key for {provider} not found in environment variables")
 	
+	if base_link:
+		# add to args
+		args["base_url"] = base_link
+
 	if provider == "test":
 		return PlayerClass()
 	
@@ -135,16 +153,20 @@ def generate_summary(results_file: str, summary_file: str):
 	}).round(2)
 	
 	# Calculate win percentage (score of 25 is a win)
-	win_pct = latest_experiments[latest_experiments['score'] == 25].groupby(['provider', 'model', 'args']).size() / \
-			  latest_experiments.groupby(['provider', 'model', 'args']).size()
+	win_games = latest_experiments[latest_experiments['score'] == 25].groupby(['provider', 'model', 'args']).size()
+	total_games = latest_experiments.groupby(['provider', 'model', 'args']).size()
+	win_pct = (win_games / total_games).fillna(0)  # Replace NaN with 0 when no wins
 	
 	summary['win_percentage'] = win_pct.round(2)
 	
 	# Flatten column names
 	summary.columns = ['avg_score', 'std_score', 'num_games', 'win_percentage', 'avg_turns_played']
+
+	# arrange by win_percentage, then by avg_score, then by avg_turns_played (higher is better for all)
+	summary = summary.sort_values(by=['win_percentage', 'avg_score', 'avg_turns_played'], ascending=[False, False, False])
 	
-	# Save summary
-	summary.to_csv(summary_file)
+	# Save summary, overwrite if exists
+	summary.reset_index().to_csv(summary_file, index=False)
 	print(f"\nSummary saved to {summary_file}")
 
 
@@ -169,24 +191,49 @@ def main():
 		help='Comma-separated list of models to run in the format: provider/model/{"args"}'
 	)
 	parser.add_argument(
+		'-p', '--provider',
+		type=str,
+		default=None,
+		help='Filter models by provider name'
+	)
+	parser.add_argument(
+		'--only-new',
+		action='store_true',
+		help='Only run models that are not present in existing results'
+	)
+	parser.add_argument(
 		'-d', '--debug',
 		action='store_true',
 		help='Enable debug mode'
 	)
 	
-	parsed_args = parser.parse_args()  # Rename to parsed_args instead of args
+	parsed_args = parser.parse_args()
 	
 	models = []
 	if parsed_args.models:
-		for model in parsed_args.models.split(','):
-			provider, model, model_args = model.split('/')  # Rename to model_args
+		for model in parsed_args.models.split(';'):
+			provider, model, model_args = model.split('/')
 			if model_args:
 				model_args = json.loads(model_args)
 			else:
-				model_args = {"cot": 0}  # default args
+				model_args = {"cot": 0}
 			models.append({"provider": provider, "model": model, "args": model_args})
 	else:
 		models = AVAILABLE_MODELS  # run all models
+	
+	# Filter by provider if specified
+	if parsed_args.provider:
+		models = [m for m in models if m["provider"] == parsed_args.provider]
+	
+	# Filter out already tested models if only-new is specified
+	if parsed_args.only_new and os.path.exists(os.path.join(parsed_args.output_dir, "experiment_results.csv")):
+		df = pd.read_csv(os.path.join(parsed_args.output_dir, "experiment_results.csv"))
+		tested_configs = set()
+		for _, row in df.iterrows():
+			config = f"{row['provider']}/{row['model']}/{row['args']}"
+			tested_configs.add(config)
+		
+		models = [m for m in models if f"{m['provider']}/{m['model']}/{m['args']}" not in tested_configs]
 	
 	run_experiments(parsed_args.num_runs, parsed_args.output_dir, models, debug=parsed_args.debug)
 

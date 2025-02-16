@@ -220,143 +220,194 @@ class GPTPlayer(Player, PromptLoaderMixin):
 class ClaudePlayer(Player, PromptLoaderMixin):
 	def __init__(self, model: str = "claude-3-sonnet-20240229", api_key: Optional[str] = None, 
 				 cot: int = 0, system_prompt: Optional[str] = None, 
-				 play_suffix: Optional[str] = None, think_suffix: Optional[str] = None):
+				 play_suffix: Optional[str] = None, think_suffix: Optional[str] = None,
+				 debug: bool = False):
 		super().__init__()
 		self.client = Anthropic(api_key=api_key)
 		self.model = model
 		self.cot = cot
-		
+		self.debug = debug
 		self._load_prompts(system_prompt, play_suffix, think_suffix)
+		self.messages = []
+
+	def _debug_print(self, message: str):
+		if self.debug:
+			print(message)
 	
 	def _generate_move(self, game_state: str) -> str:
-		# Add game state to conversation history
-		self.messages.append({"role": "user", "content": game_state})
+		# Initial content based on COT
+		if self.cot == 0:
+			content = game_state + "\n" + self.play_suffix
+			max_tokens = 32
+		else:
+			content = game_state + "\n" + self.think_suffix
+			max_tokens = 2048
+
+		self.messages.append({"role": "user", "content": content})
+		self._debug_print(f">>>>>>> LLM input:\n {content}\n")
 		
 		try:
-			for i in range(self.cot + 1):
-				if i == self.cot:
-					self.messages.append({
-						"role": "user", 
-						"content": self.play_suffix
-					})
-				else:
-					self.messages.append({
-						"role": "user", 
-						"content": self.think_suffix
-					})
-				
-				# Get response from API
-				response = self.client.messages.create(
-					model=self.model,
-					messages=self.messages,
-					system=self.system_prompt # anthropic requires system prompt per message
-				)
-
-				# Extract move from response
-				output = response.content[0].text
-				
-				# Add response to conversation history
-				self.messages.append({
-					"role": "assistant",
-					"content": output
-				})
-			
-			return output # the final output is the move
-			
+			response = self.client.messages.create(
+				model=self.model,
+				messages=self.messages,
+				max_tokens=max_tokens,
+				system=self.system_prompt
+			)
+			output = response.content[0].text
+			self._debug_print(f">>>>>>> LLM output:\n {output}\n")
 		except Exception as e:
 			print(f"Error generating move: {e}")
 			return "ERROR"
+		
+		self.messages.append({"role": "assistant", "content": output})
+		
+		if self.cot == 0:
+			return output
+		
+		# if COT > 0, continue to generate moves	
+		for i in range(self.cot):
+			if i == self.cot - 1:
+				content = self.play_suffix
+				max_tokens = 32
+			else:
+				content = self.think_suffix
+				max_tokens = 2048
+			
+			self.messages.append({"role": "user", "content": content})
+			self._debug_print(f">>>>>>> LLM input:\n {content}\n")
+			
+			try:
+				response = self.client.messages.create(
+					model=self.model,
+					messages=self.messages,
+					system=self.system_prompt,
+					max_tokens=max_tokens
+				)
+				output = response.content[0].text
+				self._debug_print(f">>>>>>> LLM output:\n {output}\n")
+			except Exception as e:
+				print(f"Error generating move: {e}")
+				return "ERROR"
+			
+			self.messages.append({"role": "assistant", "content": output})
+		
+		return output
 
 
 class GeminiPlayer(Player, PromptLoaderMixin):
 	def __init__(self, model: str = "gemini-pro", api_key: Optional[str] = None, 
 				 cot: int = 0, system_prompt: Optional[str] = None, 
-				 play_suffix: Optional[str] = None, think_suffix: Optional[str] = None):
+				 play_suffix: Optional[str] = None, think_suffix: Optional[str] = None,
+				 debug: bool = False):
 		super().__init__()
 		if api_key:
 			genai.configure(api_key=api_key)
+		self.model = model
 		self.cot = cot
-		
+		self.debug = debug
 		self._load_prompts(system_prompt, play_suffix, think_suffix)
-		
 		self.model = genai.GenerativeModel(model, system_instruction=self.system_prompt)
 		self.chat = self.model.start_chat(history=[])
-		
+
+	def _debug_print(self, message: str):
+		if self.debug:
+			print(message)
+	
 	def _generate_move(self, game_state: str) -> str:
+		if self.cot == 0:
+			content = game_state + "\n" + self.play_suffix
+		else:
+			content = game_state + "\n" + self.think_suffix
+
+		self._debug_print(f">>>>>>> LLM input:\n {content}\n")
+		
 		try:
-			# Send game state
-			self.chat.send_message(game_state)
-			
-			for i in range(self.cot + 1):
-				if i == self.cot:
-					response = self.chat.send_message(self.play_suffix)
-				else:
-					response = self.chat.send_message(self.think_suffix)
-				
-				output = response.text
-			
-			return output # the final output is the move
-			
+			response = self.chat.send_message(content)
+			output = response.text
+			self._debug_print(f">>>>>>> LLM output:\n {output}\n")
 		except Exception as e:
 			print(f"Error generating move: {e}")
 			return "ERROR"
+		
+		if self.cot == 0:
+			return output
+		
+		for i in range(self.cot):
+			content = self.play_suffix if i == self.cot - 1 else self.think_suffix
+			self._debug_print(f">>>>>>> LLM input:\n {content}\n")
+			
+			try:
+				response = self.chat.send_message(content)
+				output = response.text
+				self._debug_print(f">>>>>>> LLM output:\n {output}\n")
+			except Exception as e:
+				print(f"Error generating move: {e}")
+				return "ERROR"
+		
+		return output
 
 
 class GroqPlayer(Player, PromptLoaderMixin):
 	def __init__(self, model: str = "mixtral-8x7b-32768", api_key: Optional[str] = None, 
 				 cot: int = 0, system_prompt: Optional[str] = None, 
-				 play_suffix: Optional[str] = None, think_suffix: Optional[str] = None):
+				 play_suffix: Optional[str] = None, think_suffix: Optional[str] = None,
+				 debug: bool = False):
 		super().__init__()
 		self.client = Groq(api_key=api_key)
 		self.model = model
 		self.cot = cot
-		
+		self.debug = debug
 		self._load_prompts(system_prompt, play_suffix, think_suffix)
-
-		# Initialize conversation with system prompt
 		self.messages = [
 			{"role": "system", "content": self.system_prompt}
 		]
+
+	def _debug_print(self, message: str):
+		if self.debug:
+			print(message)
 	
 	def _generate_move(self, game_state: str) -> str:
-		# Add game state to conversation history
-		self.messages.append({"role": "user", "content": game_state})
+		if self.cot == 0:
+			content = game_state + "\n" + self.play_suffix
+		else:
+			content = game_state + "\n" + self.think_suffix
+
+		self.messages.append({"role": "user", "content": content})
+		self._debug_print(f">>>>>>> LLM input:\n {content}\n")
 		
 		try:
-			for i in range(self.cot + 1):
-				if i == self.cot:
-					self.messages.append({
-						"role": "user", 
-						"content": self.play_suffix
-					})
-				else:
-					self.messages.append({
-						"role": "user", 
-						"content": self.think_suffix
-					})
-				
-				# Get response from API
-				completion_args = {
-					"model": self.model,
-					"messages": self.messages
-				}
-				if self.reasoning_effort is not None:
-					completion_args["reasoning_effort"] = self.reasoning_effort
-				
-				response = self.client.chat.completions.create(**completion_args)
-
-				# Extract move from response
-				output = response.choices[0].message.content
-				
-				# Add response to conversation history
-				self.messages.append({
-					"role": "assistant",
-					"content": output
-				})
-			
-			return output # the final output is the move
-			
+			response = self.client.chat.completions.create(
+				model=self.model,
+				messages=self.messages
+			)
+			output = response.choices[0].message.content.strip()
+			self._debug_print(f">>>>>>> LLM output:\n {output}\n")
 		except Exception as e:
 			print(f"Error generating move: {e}")
 			return "ERROR"
+		
+		self.messages.append({"role": "assistant", "content": output})
+		
+		if self.cot == 0:
+			return output
+		
+		for i in range(self.cot):
+			content = self.play_suffix if i == self.cot - 1 else self.think_suffix
+			self.messages.append({"role": "user", "content": content})
+			self._debug_print(f">>>>>>> LLM input:\n {content}\n")
+			
+			try:
+				response = self.client.chat.completions.create(
+					model=self.model,
+					messages=self.messages
+				)
+				output = response.choices[0].message.content.strip()
+				self._debug_print(f">>>>>>> LLM output:\n {output}\n")
+			except Exception as e:
+				print(f"Error generating move: {e}")
+				return "ERROR"
+			
+			self.messages.append({"role": "assistant", "content": output})
+		
+		return output
 

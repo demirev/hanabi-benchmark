@@ -28,6 +28,9 @@ BASE_MODELS = [
 	{"provider": "groq", "model": "llama-guard-3-8b"},
 	{"provider": "groq", "model": "llama3-70b-8192"},
 	{"provider": "groq", "model": "llama3-8b-8192"},
+	{"provider": "groq", "model": "deepseek-r1-distill-llama-70b"},
+	{"provider": "groq", "model": "deepseek-r1-distill-qwen-32b"},
+	{"provider": "groq", "model": "qwen-2.5-32b"},
 	
 	# XAI models
 	{"provider": "xai", "model": "grok-2-1212"},

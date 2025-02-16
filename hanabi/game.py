@@ -165,11 +165,12 @@ class HanabiGame:
             # execute move
             if verbosity > 0:
                 print(f">>> Player {self.current_player+1} move: {move}")
+                
             executed_move = self.execute_move(self.current_player, move)
 
             # update history
             for player in range(len(self.players)):
-                history[player] += f"\n<-------- Turn {self.turns_played}, Player {self.current_player+1} -------->\n" 
+                history[player] += f"\n<-------- Turn {self.turns_played-1}, Player {self.current_player+1} -------->\n"  # -1 because we are adding the move after the turn
                 history[player] += f"<-- Game State -->\n{current_states[player]}\n"
                 history[player] += f"<-- Move -->\n{executed_move}\n\n"
 
