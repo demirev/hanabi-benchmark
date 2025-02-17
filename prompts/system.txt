@@ -19,7 +19,7 @@ You must choose ONE of these actions:
 
 1. PLAY A CARD
 - Format: P{card_position} where card_position is the position of the card in your hand
-- Example: "P1" plays your first card
+- Example: "P2" plays your second card
 - Card will be automatically placed on its color's pile if it's the correct number
 - Cards must be played on each color's pile in order (1,2,3,4,5)
 - If card cannot be played: lose 1 life, card is discarded

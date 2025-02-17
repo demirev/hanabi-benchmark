@@ -131,7 +131,7 @@ def run_experiments(
 					score
 				])
 			
-			experiment_id += 1
+		experiment_id += 1 # increment experiment ID for next model
 	
 	# Generate summary after all experiments
 	generate_summary(results_file, summary_file)
@@ -143,14 +143,17 @@ def generate_summary(results_file: str, summary_file: str):
 	# Convert timestamp to datetime
 	df['timestamp'] = pd.to_datetime(df['timestamp'])
 	
-	# Get the latest experiment for each model configuration
-	latest_experiments = df.sort_values('timestamp').groupby(['provider', 'model', 'args']).last()
+	# Get the latest timestamp and corresponding experiment_id for each model configuration
+	latest_ids = df.sort_values('timestamp').groupby(['provider', 'model', 'args'])['experiment_id'].last()
+	
+	# Get all experiments that match these experiment IDs
+	latest_experiments = df[df['experiment_id'].isin(latest_ids)]
 	
 	# Calculate summary statistics on latest experiments only
 	summary = latest_experiments.groupby(['provider', 'model', 'args']).agg({
 		'score': ['mean', 'std', 'count'],
 		'turns_played': ['mean']
-	}).round(2)
+	}).round(4)
 	
 	# Calculate win percentage (score of 25 is a win)
 	win_games = latest_experiments[latest_experiments['score'] == 25].groupby(['provider', 'model', 'args']).size()
@@ -160,7 +163,7 @@ def generate_summary(results_file: str, summary_file: str):
 	summary['win_percentage'] = win_pct.round(2)
 	
 	# Flatten column names
-	summary.columns = ['avg_score', 'std_score', 'num_games', 'win_percentage', 'avg_turns_played']
+	summary.columns = ['avg_score', 'std_score', 'num_games', 'avg_turns_played', 'win_percentage']
 
 	# arrange by win_percentage, then by avg_score, then by avg_turns_played (higher is better for all)
 	summary = summary.sort_values(by=['win_percentage', 'avg_score', 'avg_turns_played'], ascending=[False, False, False])

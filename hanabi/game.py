@@ -115,14 +115,14 @@ class HanabiGame:
                 self.lives -= 1
                 self.discard_pile.append(card)
             if self.deck:
-                self.hands[player].append(self.deck.pop())
+                self.hands[player].insert(card_idx, self.deck.pop())
                 
         elif move.startswith('D'):
             card_idx = int(move[1]) - 1
             card = self.hands[player].pop(card_idx)
             self.discard_pile.append(card)
             if self.deck:
-                self.hands[player].append(self.deck.pop())
+                self.hands[player].insert(card_idx, self.deck.pop())
             self.info_tokens = min(8, self.info_tokens + 1)
             
         elif move.startswith('C'):
