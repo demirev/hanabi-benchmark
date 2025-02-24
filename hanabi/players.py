@@ -264,7 +264,7 @@ class ClaudePlayer(Player, PromptLoaderMixin):
 					"type": "enabled",
 					"budget_tokens": self.thinking_tokens
 				}
-				create_args["betas"] = ["output-128k-2025-02-19"] # allows for very long outputs, hence more reasoning
+				create_args["extra_headers"] = {"anthropic-beta": "output-128k-2025-02-19"} # allows for very long outputs, hence more reasoning
 			
 			response = self.client.messages.create(**create_args)
 
