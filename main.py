@@ -10,7 +10,7 @@ from hanabi.players import (
 	GPTPlayer,
 	ClaudePlayer,
 	GeminiPlayer,
-	#GroqPlayer,
+	GroqPlayer,
 	RandomPlayer
 )
 from config.models import AVAILABLE_MODELS
@@ -24,7 +24,7 @@ def get_player_class(provider: str) -> type:
 		"openai": GPTPlayer,
 		"anthropic": ClaudePlayer,
 		"google": GeminiPlayer,
-		"groq": GPTPlayer, # compatible API with OpenAI
+		"groq": GroqPlayer, # compatible API with OpenAI
 		"xai": GPTPlayer, # compatible API with OpenAI
 		"test": RandomPlayer
 	}
@@ -33,7 +33,7 @@ def get_player_class(provider: str) -> type:
 
 def get_base_link(provider: str) -> str:
 	base_links = {
-		"groq": "https://api.groq.com/openai/v1",
+		#"groq": "https://api.groq.com/openai/v1",
 		"xai": "https://api.x.ai/v1"
 	}
 	if provider not in base_links:

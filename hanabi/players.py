@@ -221,12 +221,18 @@ class ClaudePlayer(Player, PromptLoaderMixin):
 	def __init__(self, model: str = "claude-3-sonnet-20240229", api_key: Optional[str] = None, 
 				 cot: int = 0, system_prompt: Optional[str] = None, 
 				 play_suffix: Optional[str] = None, think_suffix: Optional[str] = None,
-				 debug: bool = False):
+				 debug: bool = False, thinking_tokens: Optional[int] = None):
 		super().__init__()
 		self.client = Anthropic(api_key=api_key)
 		self.model = model
 		self.cot = cot
 		self.debug = debug
+		if thinking_tokens is not None:
+			self.is_thinking = True
+			self.thinking_tokens = thinking_tokens
+		else:
+			self.is_thinking = False
+			self.thinking_tokens = 0
 		self._load_prompts(system_prompt, play_suffix, think_suffix)
 		self.messages = []
 
@@ -238,22 +244,40 @@ class ClaudePlayer(Player, PromptLoaderMixin):
 		# Initial content based on COT
 		if self.cot == 0:
 			content = game_state + "\n" + self.play_suffix
-			max_tokens = 32
+			max_tokens = 32 + int(self.is_thinking) * self.thinking_tokens
 		else:
 			content = game_state + "\n" + self.think_suffix
-			max_tokens = 2048
+			max_tokens = 2048 + int(self.is_thinking) * self.thinking_tokens
 
 		self.messages.append({"role": "user", "content": content})
 		self._debug_print(f">>>>>>> LLM input:\n {content}\n")
 		
 		try:
-			response = self.client.messages.create(
-				model=self.model,
-				messages=self.messages,
-				max_tokens=max_tokens,
-				system=self.system_prompt
-			)
-			output = response.content[0].text
+			create_args = {
+				"model": self.model,
+				"messages": self.messages,
+				"max_tokens": max_tokens,
+				"system": self.system_prompt
+			}
+			if self.is_thinking:
+				create_args["thinking"] = {
+					"type": "enabled",
+					"budget_tokens": self.thinking_tokens
+				}
+				create_args["betas"] = ["output-128k-2025-02-19"] # allows for very long outputs, hence more reasoning
+			
+			response = self.client.messages.create(**create_args)
+
+			# Extract text from response content
+			if self.is_thinking:
+				output = ""
+				for content_block in response.content:
+					if content_block.type == "text":
+						output = content_block.text
+						break
+			else:
+				output = response.content[0].text
+
 			self._debug_print(f">>>>>>> LLM output:\n {output}\n")
 		except Exception as e:
 			print(f"Error generating move: {e}")
@@ -268,22 +292,41 @@ class ClaudePlayer(Player, PromptLoaderMixin):
 		for i in range(self.cot):
 			if i == self.cot - 1:
 				content = self.play_suffix
-				max_tokens = 32
+				max_tokens = 32 + int(self.is_thinking) * self.thinking_tokens # adds thinking_tokens for thinking to total budget
 			else:
 				content = self.think_suffix
-				max_tokens = 2048
+				max_tokens = 2048 + int(self.is_thinking) * self.thinking_tokens
 			
 			self.messages.append({"role": "user", "content": content})
 			self._debug_print(f">>>>>>> LLM input:\n {content}\n")
 			
 			try:
-				response = self.client.messages.create(
-					model=self.model,
-					messages=self.messages,
-					system=self.system_prompt,
-					max_tokens=max_tokens
-				)
-				output = response.content[0].text
+				
+				create_args = {
+					"model": self.model,
+					"messages": self.messages,
+					"system": self.system_prompt,
+					"max_tokens": max_tokens
+				}
+				if self.is_thinking:
+					create_args["thinking"] = {
+						"type": "enabled",
+						"budget_tokens": self.thinking_tokens
+					}
+					create_args["betas"] = ["output-128k-2025-02-19"] # allows for very long outputs, hence more reasoning
+
+				response = self.client.messages.create(**create_args)
+
+				# Extract text from response content
+				if self.is_thinking:
+					output = ""
+					for content_block in response.content:
+						if content_block.type == "text":
+							output = content_block.text
+							break
+				else:
+					output = response.content[0].text
+
 				self._debug_print(f">>>>>>> LLM output:\n {output}\n")
 			except Exception as e:
 				print(f"Error generating move: {e}")
@@ -351,12 +394,13 @@ class GroqPlayer(Player, PromptLoaderMixin):
 	def __init__(self, model: str = "mixtral-8x7b-32768", api_key: Optional[str] = None, 
 				 cot: int = 0, system_prompt: Optional[str] = None, 
 				 play_suffix: Optional[str] = None, think_suffix: Optional[str] = None,
-				 debug: bool = False):
+				 debug: bool = False, is_thinking: bool = False):
 		super().__init__()
 		self.client = Groq(api_key=api_key)
 		self.model = model
 		self.cot = cot
 		self.debug = debug
+		self.is_thinking = is_thinking
 		self._load_prompts(system_prompt, play_suffix, think_suffix)
 		self.messages = [
 			{"role": "system", "content": self.system_prompt}
@@ -376,10 +420,14 @@ class GroqPlayer(Player, PromptLoaderMixin):
 		self._debug_print(f">>>>>>> LLM input:\n {content}\n")
 		
 		try:
-			response = self.client.chat.completions.create(
-				model=self.model,
-				messages=self.messages
-			)
+			completion_args = {
+				"model": self.model,
+				"messages": self.messages,
+			}
+			if self.is_thinking:
+				completion_args["reasoning_format"] = "hidden" # don't show reasoning for thinking models
+			
+			response = self.client.chat.completions.create(**completion_args)
 			output = response.choices[0].message.content.strip()
 			self._debug_print(f">>>>>>> LLM output:\n {output}\n")
 		except Exception as e:
@@ -397,10 +445,14 @@ class GroqPlayer(Player, PromptLoaderMixin):
 			self._debug_print(f">>>>>>> LLM input:\n {content}\n")
 			
 			try:
-				response = self.client.chat.completions.create(
-					model=self.model,
-					messages=self.messages
-				)
+				completion_args = {
+					"model": self.model,
+					"messages": self.messages
+				}
+				if self.is_thinking:
+					completion_args["reasoning_format"] = "hidden" # don't show reasoning for thinking models
+				
+				response = self.client.chat.completions.create(**completion_args)
 				output = response.choices[0].message.content.strip()
 				self._debug_print(f">>>>>>> LLM output:\n {output}\n")
 			except Exception as e:

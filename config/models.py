@@ -7,6 +7,7 @@ BASE_MODELS = [
 	{"provider": "openai", "model": "o3-mini-2025-01-31"},
 	
 	# Anthropic models
+	{"provider": "anthropic", "model": "claude-3-7-sonnet-20250219"},
 	{"provider": "anthropic", "model": "claude-3-sonnet-20240229"},
 	{"provider": "anthropic", "model": "claude-3-5-sonnet-20241022"},
 	{"provider": "anthropic", "model": "claude-3-5-haiku-20241022"},
@@ -60,6 +61,15 @@ def generate_model_variations():
 							"reasoning_effort": effort
 						}
 					})
+		elif provider == "anthropic" and model.startswith("claude-3-7-sonnet"):
+			# For Anthropic "claude-3-7-sonnet" models, generate a variation with is_thinking=True and is_thinking=False
+			for is_thinking in [True, False]:
+				for cot in [0, 1]:
+					all_models.append({
+						"provider": provider,
+						"model": model,
+						"args": {"is_thinking": is_thinking, "cot": cot}
+					})
 		elif provider == "test":
 			# Test models only need one version
 			all_models.append({
@@ -67,6 +77,15 @@ def generate_model_variations():
 				"model": model,
 				"args": {"cot": 0}
 			})
+		elif provider == "groq" and "deepseek" in model.lower():
+			# For Groq "deepseek" models, generate a variation with thinking_tokens
+			for thinking_tokens in [4096, 30000, 120000]:
+				for cot in [0, 1]:
+					all_models.append({
+						"provider": provider,
+						"model": model,
+						"args": {"thinking_tokens": thinking_tokens, "cot": cot}
+					})
 		else:
 			# For all other models, generate cot:0 and cot:1 versions
 			for cot in [0, 1]:

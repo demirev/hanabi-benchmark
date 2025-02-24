@@ -5,11 +5,14 @@ A framework for testing Large Language Models' reasoning capabilities through th
 ## LEADERBOARD
 | Model | Provider | Chain of Thought | Avg Score (out of 25) | Win % | Avg Turns |
 |-------|----------|------------------|----------------------|--------|------------|
+| o3-mini-2025-01-31 (high) | OpenAI | No | 6.8 | 0 | 59.8 |
 | o3-mini-2025-01-31 (medium) | OpenAI | No | 3.1 | 0 | 48.2 |
+| claude-3-7-sonnet-20250219 (4096 reasoning) | Anthropic | No | 1.5 | 0 | 11.7 |
 | o3-mini-2025-01-31 (low) | OpenAI | No | 1.3 | 0 | 11.5 |
-| claude-3-5-sonnet-20241022 | Anthropic | 1 | 1.3 | 0 | 10.5 |
+| claude-3-5-sonnet-20241022 | Anthropic | Yes | 1.3 | 0 | 10.5 |
 | grok-2-1212 | xAI | No | 1.1 | 0 | 4.1 |
-| grok-2-1212 | xAI | 1 | 0.6 | 0 | 5.1 |
+| deepseek-r1-distill-llama-70b | Groq | No | 1.0 | 0 | 4.3 |
+| grok-2-1212 | xAI | Yes | 0.6 | 0 | 5.1 |
 | claude-3-haiku-20240307 | Anthropic | No | 0.6 | 0 | 3.6 |
 | llama3-70b-8192 | Groq | No | 0.6 | 0 | 3.6 |
 | gemma2-9b-it | Groq | No | 0.4 | 0 | 3.4 |
