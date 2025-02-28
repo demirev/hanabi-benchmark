@@ -1,5 +1,6 @@
 BASE_MODELS = [
 	# OpenAI models
+	{"provider": "openai", "model": "gpt-4.5-preview-2025-02-27"},
 	{"provider": "openai", "model": "gpt-4o-2024-08-06"},
 	{"provider": "openai", "model": "gpt-4o-mini-2024-07-18"},
 	{"provider": "openai", "model": "o1-2024-12-17"},

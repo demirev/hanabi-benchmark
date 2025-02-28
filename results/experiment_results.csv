@@ -306,22 +306,42 @@ experiment_id,provider,model,args,timestamp,turns_played,score
 34,groq,deepseek-r1-distill-qwen-32b,{'cot': 0},2025-02-24T22:07:39.267526,5,0
 34,groq,deepseek-r1-distill-qwen-32b,{'cot': 0},2025-02-24T22:14:19.457068,11,0
 34,groq,deepseek-r1-distill-qwen-32b,{'cot': 0},2025-02-24T22:20:20.321769,13,2
-35,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T00:31:43.289862,3,0
-36,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T00:34:44.220352,3,0
-37,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T00:35:16.578620,3,0
-38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T00:43:57.272126,10,1
-38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T00:47:13.262775,13,2
-38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T00:50:42.156596,14,2
-38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T00:52:01.721532,7,0
-38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T00:55:29.693925,14,1
-38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T00:56:09.627477,4,0
-38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T01:00:43.868093,18,3
-38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T01:02:55.008008,11,2
-38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T01:07:19.476671,17,2
-38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'is_thinking': True}",2025-02-25T01:09:13.988335,9,2
+35,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T00:31:43.289862,3,0
+36,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T00:34:44.220352,3,0
+37,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T00:35:16.578620,3,0
+38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T00:43:57.272126,10,1
+38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T00:47:13.262775,13,2
+38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T00:50:42.156596,14,2
+38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T00:52:01.721532,7,0
+38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T00:55:29.693925,14,1
+38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T00:56:09.627477,4,0
+38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T01:00:43.868093,18,3
+38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T01:02:55.008008,11,2
+38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T01:07:19.476671,17,2
+38,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 4096}",2025-02-25T01:09:13.988335,9,2
 39,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:21:33.252321,3,0
 39,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:21:33.471465,3,0
 39,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:21:33.696695,3,0
 39,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:21:33.923820,3,0
 39,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:21:34.155301,3,0
 39,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:21:34.380472,3,0
+40,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:29:57.347689,16,4
+40,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:33:07.914725,13,3
+40,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:34:55.636536,7,1
+40,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:38:58.291588,17,5
+40,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:45:35.309486,23,4
+40,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:47:52.319637,7,1
+40,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:52:12.107100,17,3
+40,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:56:57.698056,19,3
+40,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T01:59:38.650588,13,3
+40,anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2025-02-25T02:02:23.361003,12,2
+41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:35:53.391053,3,0
+41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:35:59.329885,3,0
+41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:36:04.551695,3,0
+41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:36:10.388194,3,0
+41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:36:19.298255,5,0
+41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:36:23.808092,3,0
+41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:36:28.608403,3,0
+41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:36:33.239457,3,0
+41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:36:37.939968,3,0
+41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:36:50.018518,7,1
