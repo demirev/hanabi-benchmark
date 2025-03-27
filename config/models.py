@@ -21,6 +21,7 @@ BASE_MODELS = [
 	{"provider": "google", "model": "gemini-1.5-flash"},
 	{"provider": "google", "model": "gemini-1.5-flash-8b"},
 	{"provider": "google", "model": "gemini-1.5-pro"},
+	{"provider": "google", "model": "gemini-2.5-pro-exp-03-25"},
 	
 	# Groq models
 	{"provider": "groq", "model": "mixtral-8x7b-32768"},

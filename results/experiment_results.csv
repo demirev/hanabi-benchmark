@@ -345,3 +345,8 @@ experiment_id,provider,model,args,timestamp,turns_played,score
 41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:36:33.239457,3,0
 41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:36:37.939968,3,0
 41,openai,gpt-4.5-preview-2025-02-27,{'cot': 0},2025-02-28T12:36:50.018518,7,1
+42,google,gemini-2.5-pro-exp-03-25,{'cot': 0},2025-03-27T13:14:32.177734,4,0
+42,google,gemini-2.5-pro-exp-03-25,{'cot': 0},2025-03-27T13:18:14.833570,12,4
+42,google,gemini-2.5-pro-exp-03-25,{'cot': 0},2025-03-27T13:27:18.341254,20,5
+42,google,gemini-2.5-pro-exp-03-25,{'cot': 0},2025-03-27T13:30:11.494267,8,1
+42,google,gemini-2.5-pro-exp-03-25,{'cot': 0},2025-03-27T13:33:31.437793,10,2

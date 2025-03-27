@@ -8,6 +8,7 @@ A framework for testing Large Language Models' reasoning capabilities through th
 | o3-mini-2025-01-31 (high) | OpenAI | No | 6.8 | 0 | 59.8 |
 | o3-mini-2025-01-31 (medium) | OpenAI | No | 3.1 | 0 | 48.2 |
 | claude-3-7-sonnet-20250219 (16000 reasoning) | Anthropic | No | 2.9 | 0 | 14.4 |
+| google,gemini-2.5-pro-exp-03-25 | Google | No | 2.4 | 0 | 10.8 |
 | claude-3-7-sonnet-20250219 (4096 reasoning) | Anthropic | No | 1.5 | 0 | 11.7 |
 | o3-mini-2025-01-31 (low) | OpenAI | No | 1.3 | 0 | 11.5 |
 | claude-3-5-sonnet-20241022 | Anthropic | Yes | 1.3 | 0 | 10.5 |
