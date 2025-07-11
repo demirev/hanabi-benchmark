@@ -6,6 +6,8 @@ BASE_MODELS = [
 	{"provider": "openai", "model": "o1-2024-12-17"},
 	{"provider": "openai", "model": "o1-mini-2024-09-12"},
 	{"provider": "openai", "model": "o3-mini-2025-01-31"},
+	{"provider": "openai", "model": "gpt-4.1-2025-04-14"},
+	{"provider": "openai", "model": "o4-mini-2025-04-16"},
 	
 	# Anthropic models
 	{"provider": "anthropic", "model": "claude-3-7-sonnet-20250219"},
@@ -37,6 +39,8 @@ BASE_MODELS = [
 	
 	# XAI models
 	{"provider": "xai", "model": "grok-2-1212"},
+	{"provider": "xai", "model": "grok-3-beta"},
+	{"provider": "xai", "model": "grok-3-mini-beta"},
 	
 	# Test models
 	{"provider": "test", "model": "random"}
