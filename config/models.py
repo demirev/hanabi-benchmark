@@ -8,6 +8,7 @@ BASE_MODELS = [
 	{"provider": "openai", "model": "o3-mini-2025-01-31"},
 	{"provider": "openai", "model": "gpt-4.1-2025-04-14"},
 	{"provider": "openai", "model": "o4-mini-2025-04-16"},
+	{"provider": "openai", "model": "gpt-5-2025-08-07"},
 	
 	# Anthropic models
 	{"provider": "anthropic", "model": "claude-3-7-sonnet-20250219"},

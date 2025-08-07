@@ -5,10 +5,13 @@ A framework for testing Large Language Models' reasoning capabilities through th
 ## LEADERBOARD
 | Model | Provider | Chain of Thought | Avg Score (out of 25) | Win % | Avg Turns |
 |-------|----------|------------------|----------------------|--------|------------|
+| grok-4-0709 | xAI | No | 10.0 | 0 | 39.0 |
 | o3-mini-2025-01-31 (high) | OpenAI | No | 6.8 | 0 | 59.8 |
+| o4-mini-2025-04-16 | OpenAI | No | 4.3 | 0 | 37.0 |
 | o3-mini-2025-01-31 (medium) | OpenAI | No | 3.1 | 0 | 48.2 |
 | claude-3-7-sonnet-20250219 (16000 reasoning) | Anthropic | No | 2.9 | 0 | 14.4 |
-| google,gemini-2.5-pro-exp-03-25 | Google | No | 2.4 | 0 | 10.8 |
+| grok-3-mini-beta | xAI | No | 2.4 | 0 | 14.4 |
+| gemini-2.5-pro-exp-03-25 | Google | No | 2.4 | 0 | 10.8 |
 | claude-3-7-sonnet-20250219 (4096 reasoning) | Anthropic | No | 1.5 | 0 | 11.7 |
 | o3-mini-2025-01-31 (low) | OpenAI | No | 1.3 | 0 | 11.5 |
 | claude-3-5-sonnet-20241022 | Anthropic | Yes | 1.3 | 0 | 10.5 |
@@ -21,13 +24,14 @@ A framework for testing Large Language Models' reasoning capabilities through th
 | claude-3-7-sonnet-20250219 | Anthropic | No | 0.4 | 0 | 5.0 |
 | gemma2-9b-it | Groq | No | 0.4 | 0 | 3.4 |
 | claude-3-sonnet-20240229 | Anthropic | No | 0.3 | 0 | 3.4 |
+| gpt-4.1-2025-04-14 | OpenAI | Yes | 0.7 | 0 | 5.9 |
 | gpt-4o-2024-08-06 | OpenAI | Yes | 0.2 | 0 | 4.3 |
 | claude-3-5-sonnet-20241022 | Anthropic | No | 0.1 | 0 | 4.3 |
 | gpt-4.5-preview-2025-02-27 | OpenAI | No | 0.1 | 0 | 3.6 |
 
 *Note: Only showing models with non-zero scores.*
 
-Last updated: 2025-02-28
+Last updated: 2025-08-07
 
 ## Overview
 
