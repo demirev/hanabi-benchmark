@@ -1,7 +1,8 @@
 provider,model,args,avg_score,std_score,num_games,avg_turns_played,win_percentage
+xai,grok-4-0709,"{'cot': 0, 'base_url': 'https://api.x.ai/v1'}",10.0,4.5826,3,39.0,0.0
 openai,o3-mini-2025-01-31,"{'cot': 0, 'reasoning_effort': 'high'}",6.8,1.7889,5,59.8,0.0
+openai,o4-mini-2025-04-16,"{'cot': 0, 'reasoning_effort': 'high'}",4.3333,3.1411,6,37.0,0.0
 openai,o3-mini-2025-01-31,"{'cot': 0, 'reasoning_effort': 'medium'}",3.1,1.4491,10,48.2,0.0
-openai,o4-mini-2025-04-16,"{'cot': 0, 'reasoning_effort': 'high'}",3.0,3.6056,3,25.6667,0.0
 anthropic,claude-3-7-sonnet-20250219,"{'cot': 0, 'thinking_tokens': 16000}",2.9,1.2867,10,14.4,0.0
 xai,grok-3-mini-beta,"{'cot': 0, 'base_url': 'https://api.x.ai/v1'}",2.4,1.3416,5,14.4,0.0
 google,gemini-2.5-pro-exp-03-25,{'cot': 0},2.4,2.0736,5,10.8,0.0
@@ -20,8 +21,8 @@ groq,gemma2-9b-it,"{'cot': 0, 'base_url': 'https://api.groq.com/openai/v1'}",0.4
 anthropic,claude-3-sonnet-20240229,{'cot': 0},0.3,0.483,10,3.4,0.0
 openai,gpt-4o-2024-08-06,{'cot': 1},0.2,0.4216,10,4.3,0.0
 anthropic,claude-3-5-sonnet-20241022,{'cot': 0},0.1,0.3162,10,4.3,0.0
-openai,gpt-4.1-2025-04-14,{'cot': 0},0.1,0.3162,10,4.2,0.0
 openai,gpt-4.5-preview-2025-02-27,{'cot': 0},0.1,0.3162,10,3.6,0.0
+openai,gpt-4.1-2025-04-14,{'cot': 0},0.0,0.0,3,5.0,0.0
 xai,grok-3-beta,"{'cot': 0, 'base_url': 'https://api.x.ai/v1'}",0.0,0.0,5,4.8,0.0
 groq,llama3-70b-8192,"{'cot': 1, 'base_url': 'https://api.groq.com/openai/v1'}",0.0,0.0,10,3.5,0.0
 anthropic,claude-3-sonnet-20240229,{'cot': 1},0.0,0.0,10,3.3,0.0

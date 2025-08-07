@@ -41,6 +41,7 @@ BASE_MODELS = [
 	{"provider": "xai", "model": "grok-2-1212"},
 	{"provider": "xai", "model": "grok-3-beta"},
 	{"provider": "xai", "model": "grok-3-mini-beta"},
+	{"provider": "xai", "model": "grok-4-0709"},
 	
 	# Test models
 	{"provider": "test", "model": "random"}

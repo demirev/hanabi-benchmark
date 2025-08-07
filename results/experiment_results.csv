@@ -386,3 +386,9 @@ experiment_id,provider,model,args,timestamp,turns_played,score
 47,openai,o4-mini-2025-04-16,"{'cot': 0, 'reasoning_effort': 'high'}",2025-04-23T10:52:04.854250,6,0
 47,openai,o4-mini-2025-04-16,"{'cot': 0, 'reasoning_effort': 'high'}",2025-04-23T11:02:30.824835,11,2
 47,openai,o4-mini-2025-04-16,"{'cot': 0, 'reasoning_effort': 'high'}",2025-04-23T11:51:24.119695,60,7
+48,xai,grok-4-0709,"{'cot': 0, 'base_url': 'https://api.x.ai/v1'}",2025-07-11T15:10:35.409417,52,14
+48,xai,grok-4-0709,"{'cot': 0, 'base_url': 'https://api.x.ai/v1'}",2025-07-11T16:16:46.770934,17,5
+48,xai,grok-4-0709,"{'cot': 0, 'base_url': 'https://api.x.ai/v1'}",2025-07-11T18:31:04.573654,48,11
+49,openai,gpt-4.1-2025-04-14,{'cot': 0},2025-07-11T18:32:18.090290,4,0
+49,openai,gpt-4.1-2025-04-14,{'cot': 0},2025-07-11T18:32:23.928774,5,0
+49,openai,gpt-4.1-2025-04-14,{'cot': 0},2025-07-11T18:32:29.150829,6,0
